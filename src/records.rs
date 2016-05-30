@@ -2,7 +2,11 @@
  * Lists the 
  */
 
-
+pub struct Record {
+    key: String,
+    description: String,
+    coordinate: Point,
+}
 
 pub struct Point {
     id: String,
