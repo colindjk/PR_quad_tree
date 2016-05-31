@@ -1,5 +1,5 @@
 [package]
-name = "prquad_tree"
+name = "PR_quad_tree"
 version = "0.1.0"
 authors = ["kibbles"]
 
