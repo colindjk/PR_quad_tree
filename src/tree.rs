@@ -1,68 +1,77 @@
+use records::*;
 
 pub struct PRQuadTree<T: Point> {
     root: Quad<T>,
-    max: usize,
+    max: u8,
+    region: Region,
 }
 
-pub trait Point {
-    fn point(&self) -> (i64, i64);
-}
-
-/// The Quad type, which holds values that implement
-/// the 'point' method, might get renamed.
 type Quad<T> where T: Point = Option<Box<Node<T>>>;
 
 enum Node<T> {
     Intr {
-        ne: Quad<T>,
-        nw: Quad<T>,
-        se: Quad<T>,
-        sw: Quad<T>,
+        children: [Quad<T>; 4],
+        max: u8,
     },
     Leaf {
-        elements: Box<Vec<T>>,
+        elements: Vec<T>,
+        max: u8,
     },
 }
 
-impl<T: Point> Node<T> {
-    pub fn peek(&self, point: (i64, i64)) -> Option<&T> {
+/// Still considering having the Option returns be Result
+/// This way debugging could be easier, as well as adding neat functionality.
+impl<T> Node<T> where T: Point {
+
+    fn push(&mut self, r: Region, val: T) -> bool {
+        false
+    }
+
+    fn pop(&mut self, p: (i64, i64)) -> Option<T> {
         None
+    }
+
+    fn peek(&self, p: (i64, i64)) -> Option<&T> {
+        None
+    }
+
+    fn as_intr(&self) -> &Self {
+        match &self {
+            intr => &self,
+            Leaf => panic!("Failed to access internal, was leaf.")
+        }
     }
 }
 
-impl<T: Point> PRQuadTree<T> {
-
+impl<T> PRQuadTree<T> where T: Point {
     /// Where max_pts is max number of non-dupe pts.
-    pub fn new(max_pts: usize) -> Self {
+    pub fn new(max_pts: u8) -> Self {
         PRQuadTree { root: None, max: max_pts, }
     }
-
     /// Insertion
-    pub fn push(&self, val: T) -> bool {
+    fn push(&mut self, val: T) -> bool {
         false
     }
 
     /// pops off, b/c we want the original inserted data.
-    pub fn pop(&self, point: (i64, i64)) -> Option<T> {
+    fn pop(&mut self, p: (i64, i64)) -> Option<T> {
         None
     }
 
     /// Seeks out value
-    pub fn peek(&self, point: (i64, i64)) -> Option<&T> {
-        self.root.as_ref().and_then(|root| root.peek(point))
+    fn peek(&self, p: (i64, i64)) -> Option<&T> {
+        self.root.as_ref().and_then(|root| root.peek(p))
     }
-
 }
 
 #[cfg(test)]
 mod test {
 
-    use super::Point;
-    use super::PRQuadTree as Tree;
+    use records::Point;
+    use super::PRQuadTree;
 
     /// We will use this struct to test how data is saved etc.
-    #[derive(Debug)]
-    #[derive(PartialEq)]
+    #[derive(PartialEq, Debug)]
     struct Pt {
         description: String,
         coordinate: (i64, i64),
@@ -84,11 +93,16 @@ mod test {
     }
 
     #[test]
-    fn init_test() {
-        let mut tree = Tree::new(5);
+    fn init() {
+        let mut tree = PRQuadTree::new(5);
 
         tree.push(Pt::new("Hello".to_string(), (5, 3)));
         assert_eq!(tree.peek((5, 4)), None);
+    }
+
+    #[test]
+    fn push_pop() {
+
     }
 
 }

@@ -1,7 +1,7 @@
 //mod command;
 //mod database;
-//mod records;
-mod tree;
+mod records;
+pub mod tree;
 
 #[cfg(test)]
 mod tests {
