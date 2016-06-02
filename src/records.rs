@@ -28,9 +28,12 @@ impl Region {
     pub fn new(new_size: u64) -> Self {
         Region { size: new_size, origin: (0, 0) }
     }
-    //top_side(&self, (i64, i)
 
-    //quad_NE(&self)
+    /// modifies the Region into one quarter the size.
+    /// Warning, this will make no bounds check for now.
+    pub fn quad(&self, p: Point) -> Self {
+        Self::new(self.size)
+    }
 }
 
 pub struct Record<T: HasPoint> {

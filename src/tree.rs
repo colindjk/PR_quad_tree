@@ -29,40 +29,27 @@ enum Node<T> where T: HasPoint {
 /// Inserting will pass a region down to be 'chopped up' into quads.
 impl<T> Node<T> where T: HasPoint {
 
-    fn new_leaf(new_max: usize) -> Self {
+    fn new_leaf(vals: Vec<T>, new_cur: usize, new_max: usize) -> Self {
         Node::Leaf { elements: vec![], cur: 0, max: new_max }
     }
 
-    //fn to_leaf(&mut self) {
-        //let vals = self.into_vals(vec![]);
-        //let vals_len = vals.len();
-        //mem::replace(self, Node::Leaf {
-            //elements: vals, cur: elements.len(), max: 5
-        //});
-    //}
-
-    fn new_intr(new_max: usize) -> Self {
-        Node::Intr { quads: [None, None, None, None], cur: 0, max: new_max }
+    fn new_intr(r: Region, vals: &mut Vec<T>, new_max: usize) -> Self {
+        let mut intr =
+            Node::Intr { quads: [None, None, None, None], cur: 0, max: new_max };
+        while let Some(val) = vals.pop()
+            { intr.push(r.clone().quad(val.point()), val); };
+        intr
     }
 
-    /// used for decomp / recomp
+    /// used for decomp / recomp, it's O(n), but with a big coefficient. for now.
     /// Note: Decomposition is currently cloning. This bad.
-    /// although because I grab the leaf vals so it's still O(n), just has a big
-    /// coefficient
     fn switch(&mut self, r: Region) {
-        let mut new_self = match self {
-            &mut Node::Intr { quads: _,  cur: c, max: m } =>
-            {
-                Node::Leaf { elements: self.into_vals(vec![]), cur: c, max: m }
-            }
-            &mut Node::Leaf { elements: ref mut leaf_vals, cur: _, max: m } =>
-            {
-                let mut new_intr = Self::new_intr(m);
-                while let Some(val) = leaf_vals.pop() {
-                   new_intr.push(r.clone(), val);
-                };
-                new_intr
-            }
+        let mut new_self = match self
+        {
+            &mut Node::Intr { quads: _,  cur: c, max: m }
+                            => Self::new_leaf(self.vals(), c, m),
+            &mut Node::Leaf { elements: ref mut leaf_vals, cur: _, max: m }
+                            => Self::new_intr(r, leaf_vals, m)
         };
         mem::replace(self, new_self);
     }
@@ -85,6 +72,10 @@ impl<T> Node<T> where T: HasPoint {
                 ////vals
             //}
         //}
+    }
+
+    pub fn vals(&mut self) -> Vec<T> {
+        self.into_vals(vec![])
     }
 
     fn push(&mut self, r: Region, val: T) -> bool {
