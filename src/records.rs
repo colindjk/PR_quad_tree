@@ -2,29 +2,38 @@
  * Lists the things
  */
 
-pub trait Point {
+pub trait HasPoint {
     fn point(&self) -> (u64, u64);
 }
 
+pub type Point = (u64, u64);
+
+#[derive(Clone, Copy)]
 pub struct Region {
     size: u64,
+    origin: Point,
+}
+
+enum Quadrant {
+    NE = 0,
+    NW = 1,
+    SW = 2,
+    SE = 3,
 }
 
 /// Figure out how to make an immutable region have bounded regions
 /// per quad thank-you.
-impl BoundedRegion {
-    pub fn quad(&self, &point: (u64, u64)) -> Option<u8> {
-        match &point {
-            (0, y) => Some(0),
-            (x, 0) => Some(self.size),
-            //(self.size, 0) => Some(1),
-            (x, 0) => Some(1),
-            _ => None,
-        }
+impl Region {
+
+    pub fn new(new_size: u64) -> Self {
+        Region { size: new_size, origin: (0, 0) }
     }
+    //top_side(&self, (i64, i)
+
+    //quad_NE(&self)
 }
 
-pub struct Record<T: Point> {
+pub struct Record<T: HasPoint> {
     key: String,
     description: String,
     coordinate: T,

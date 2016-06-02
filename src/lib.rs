@@ -1,3 +1,5 @@
+#![allow(dead_code)] // avoids the unused^2 life.
+
 //mod command;
 //mod database;
 mod records;
