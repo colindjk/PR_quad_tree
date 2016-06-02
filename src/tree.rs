@@ -30,7 +30,7 @@ enum Node<T> where T: HasPoint {
 impl<T> Node<T> where T: HasPoint {
 
     fn new_leaf(vals: Vec<T>, new_cur: usize, new_max: usize) -> Self {
-        Node::Leaf { elements: vec![], cur: 0, max: new_max }
+        Node::Leaf { elements: vals, cur: new_cur, max: new_max }
     }
 
     fn new_intr(r: Region, vals: &mut Vec<T>, new_max: usize) -> Self {
@@ -43,19 +43,20 @@ impl<T> Node<T> where T: HasPoint {
 
     /// used for decomp / recomp, it's O(n), but with a big coefficient. for now.
     /// Note: Decomposition is currently cloning. This bad.
-    fn switch(&mut self, r: Region) {
-        let mut new_self = match self
-        {
-            &mut Node::Intr { quads: _,  cur: c, max: m }
-                            => Self::new_leaf(self.vals(), c, m),
-            &mut Node::Leaf { elements: ref mut leaf_vals, cur: _, max: m }
-                            => Self::new_intr(r, leaf_vals, m)
-        };
+    fn to_other(&mut self, r: Region) {
+        let new_self = match self {
+            &mut Node::Intr { quads: _,  cur: c, max: m } => {
+                 Self::new_leaf(self.vals(), c, m)
+            }
+            &mut Node::Leaf { elements: ref mut leaf_vals, cur: _, max: m } => {
+                 Self::new_intr(r, leaf_vals, m)
+        }};
         mem::replace(self, new_self);
     }
 
     /// uhhhh.... if it compiles it'll work, right?
     /// Used for into_iter and merge
+    #[allow(unused)]
     fn into_vals(&mut self, mut vals: Vec<T>) -> Vec<T> {
         vec![]
         //match self {
@@ -74,48 +75,49 @@ impl<T> Node<T> where T: HasPoint {
         //}
     }
 
+    #[allow(unused)]
     pub fn vals(&mut self) -> Vec<T> {
         self.into_vals(vec![])
     }
 
+    #[allow(unused)]
     fn push(&mut self, r: Region, val: T) -> bool {
         false
     }
 
+    #[allow(unused)]
     fn pop(&mut self, r: Region, p: Point) -> Option<T> {
         None
     }
 
+    #[allow(unused)]
     fn peek(&self, r: Region, p: Point) -> Option<&T> {
         None
     }
 
-    /// likely totally useless now that I think about it
-    fn as_intr(&self) -> &Self {
-        match &self {
-            Intr => &self,
-            //Leaf => panic!("Failed to access internal, was leaf.")
-        }
-    }
 }
 
 impl<T> PRQuadTree<T> where T: HasPoint {
 
     /// Where max_pts is max number of non-dupe pts.
+    #[allow(unused)]
     pub fn new(max_pts: usize) -> Self {
         PRQuadTree { root: None, max: max_pts, region: Region::new(2048) }
     }
 
+    #[allow(unused)]
     pub fn push(&mut self, val: T) -> Option<T> {
         None
     }
 
     /// pops off, b/c we want the original inserted data.
+    #[allow(unused)]
     pub fn pop(&mut self, p: Point) -> Option<T> {
         None
     }
 
-    /// Seeks out value
+    /// Peeks at a point in the tree.
+    #[allow(unused)]
     pub fn peek(&self, p: Point) -> Option<&T> {
         self.root.as_ref()
             .and_then(|root| root.peek(self.reg(), p))

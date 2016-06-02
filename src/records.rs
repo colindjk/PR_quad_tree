@@ -1,16 +1,21 @@
+
+/// Sort of the global var which determines what
+/// type of integers you want to use.
+pub type NumType = u64;
+
 /**
  * Lists the things
  */
 
 pub trait HasPoint {
-    fn point(&self) -> (u64, u64);
+    fn point(&self) -> (NumType, NumType);
 }
 
-pub type Point = (u64, u64);
+pub type Point = (NumType, NumType);
 
 #[derive(Clone, Copy)]
 pub struct Region {
-    size: u64,
+    size: NumType,
     origin: Point,
 }
 
@@ -25,10 +30,11 @@ enum Quadrant {
 /// per quad thank-you.
 impl Region {
 
-    pub fn new(new_size: u64) -> Self {
+    pub fn new(new_size: NumType) -> Self {
         Region { size: new_size, origin: (0, 0) }
     }
 
+    #[allow(unused)]
     /// modifies the Region into one quarter the size.
     /// Warning, this will make no bounds check for now.
     pub fn quad(&self, p: Point) -> Self {
@@ -36,22 +42,26 @@ impl Region {
     }
 }
 
+#[allow(unused)]
 pub struct Record<T: HasPoint> {
     key: String,
     description: String,
     coordinate: T,
 }
 
+#[allow(unused)]
 pub struct Coordinate {
     id: String,
     x: i64,
     y: i64,
 }
 
+#[allow(unused)]
 pub struct Square {
-    size: u64,
+    size: NumType,
 }
 
+#[allow(unused)]
 pub struct Rectangle {
     origin: u32,
     width: u32,
@@ -59,6 +69,7 @@ pub struct Rectangle {
 }
 
 #[cfg(test)]
+#[allow(unused)]
 mod test {
     use super::*;
 }
