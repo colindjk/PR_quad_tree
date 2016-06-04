@@ -15,11 +15,13 @@ pub type Point = (NumType, NumType);
 
 #[derive(Clone, Copy)]
 pub struct Region {
-    size: NumType,
-    origin: Point,
+    x: NumType,
+    y: NumType,
+    w: NumType,
+    h: NumType,
 }
 
-enum Quadrant {
+pub enum Quadrant {
     NE = 0,
     NW = 1,
     SW = 2,
@@ -30,47 +32,106 @@ enum Quadrant {
 /// per quad thank-you.
 impl Region {
 
-    pub fn new(new_size: NumType) -> Self {
-        Region { size: new_size, origin: (0, 0) }
+    pub fn new(x: NumType, y: NumType, w: NumType, h: NumType) -> Self {
+        Region { x: x, y: y, w: w, h: h }
     }
 
-    #[allow(unused)]
-    /// modifies the Region into one quarter the size.
-    /// Warning, this will make no bounds check for now.
-    pub fn quad(&self, p: Point) -> Self {
-        Self::new(self.size)
+    pub fn contains(&self, p: Point) -> bool {
+
+    }
+
+    pub fn to_quadrant(self, p: Point) -> Self {
+        match self.get_quadrant(p) {
+            Quadrant::NE => self.ne(),
+            Quadrant::NW => self.nw(),
+            Quadrant::SW => self.sw(),
+            Quadrant::SE => self.se(),
+        }
+    }
+
+    /// the selfy-ning.
+
+    fn ne(mut self) -> Self {
+        self.w = self.w / 2; self.h = self.h / 2;
+        self.x = self.x + self.w;
+        self.y = self.y + self.h;
+        self
+    }
+
+    fn nw(mut self) -> Self {
+        self.w = self.w / 2; self.h = self.h / 2;
+        self.y = self.y + self.h;
+        self
+    }
+
+    fn se(mut self) -> Self {
+        self.w = self.w / 2; self.h = self.h / 2;
+        self.x = self.x + self.w;
+        self
+    }
+
+    fn sw(mut self) -> Self {
+        self.w = self.w / 2; self.h = self.h / 2;
+        self
+    }
+
+    /// WARNING: This method will not check for bounds b/c yolo.
+    pub fn get_quadrant(&self, p: Point) -> Quadrant {
+        let (x, y) = p;
+        if x > self.x + (self.w / 2) {
+            if y > self.y + (self.h / 2) {
+                Quadrant::NE
+            } else { Quadrant::SE }
+        } else {
+            if y > self.y + (self.h / 2) {
+                Quadrant::NW
+            } else { Quadrant::SW }
+        }
+    }
+
+}
+
+impl Default for Region {
+    fn default() -> Self {
+        Region { x: 0, y: 0, w: 2048, h: 2048 }
     }
 }
 
-#[allow(unused)]
-pub struct Record<T: HasPoint> {
-    key: String,
-    description: String,
-    coordinate: T,
-}
-
-#[allow(unused)]
-pub struct Coordinate {
-    id: String,
-    x: i64,
-    y: i64,
-}
-
-#[allow(unused)]
-pub struct Square {
-    size: NumType,
-}
-
-#[allow(unused)]
-pub struct Rectangle {
-    origin: u32,
-    width: u32,
-    height: u32,
-}
-
+/// ---| Testing section |---
 #[cfg(test)]
-#[allow(unused)]
 mod test {
-    use super::*;
+
 }
+
+//#[allow(unused)]
+//pub struct Record<T: HasPoint> {
+    //key: String,
+    //description: String,
+    //coordinate: T,
+//}
+
+//#[allow(unused)]
+//pub struct Coordinate {
+    //id: String,
+    //x: i64,
+    //y: i64,
+//}
+
+//#[allow(unused)]
+//pub struct Square {
+    //size: NumType,
+//}
+
+//#[allow(unused)]
+//pub struct Rectangle {
+    //origin: u32,
+    //width: u32,
+    //height: u32,
+//}
+
+//#[cfg(test)]
+//#[allow(unused)]
+//mod test {
+    //use super::*;
+//}
 

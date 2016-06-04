@@ -1,6 +1,21 @@
 use records::*;
 use std::mem;
 
+/// Note, think of 'ref' as a & but used ONLY when destructing types (i.e. 'match').
+
+/**
+ * PRQuadTree with proper decomposition / merge functionality.
+ * Functionality to come:
+ *      push
+ *      pop
+ *      pop_all
+ *      peek
+ *      peek_dupes
+ *      pop_dupes
+ *      region_search
+ *      peek_loc
+ *      iterators - all 
+ */
 pub struct PRQuadTree<T: HasPoint> {
     root: Quad<T>,
     max: usize,
@@ -9,16 +24,14 @@ pub struct PRQuadTree<T: HasPoint> {
 
 type Quad<T> where T: HasPoint = Option<Box<Node<T>>>;
 
-//#[derive(Copy)]
 enum Node<T> where T: HasPoint {
     Intr {
         quads: [Quad<T>; 4],
-        //quads: Vec<Quad<T>>,
         cur: usize,
         max: usize,
     },
     Leaf {
-        elements: Vec<T>,
+        values: Vec<T>,
         cur: usize,
         max: usize,
     },
@@ -30,25 +43,27 @@ enum Node<T> where T: HasPoint {
 impl<T> Node<T> where T: HasPoint {
 
     fn new_leaf(vals: Vec<T>, new_cur: usize, new_max: usize) -> Self {
-        Node::Leaf { elements: vals, cur: new_cur, max: new_max }
+        if vals.len() != new_cur { panic!("new_leaf() size mismatch!"); }
+        Node::Leaf { values: vals, cur: new_cur, max: new_max }
     }
 
     fn new_intr(r: Region, vals: &mut Vec<T>, new_max: usize) -> Self {
         let mut intr =
             Node::Intr { quads: [None, None, None, None], cur: 0, max: new_max };
-        while let Some(val) = vals.pop()
-            { intr.push(r.clone().quad(val.point()), val); };
+        while let Some(val) = vals.pop() {
+            intr.push(r.clone().to_quadrant(val.point()), val);
+        };
         intr
     }
 
     /// used for decomp / recomp, it's O(n), but with a big coefficient. for now.
-    /// Note: Decomposition is currently cloning. This bad.
+    /// Note: Decomposition is currently cloning
     fn to_other(&mut self, r: Region) {
         let new_self = match self {
             &mut Node::Intr { quads: _,  cur: c, max: m } => {
                  Self::new_leaf(self.vals(), c, m)
             }
-            &mut Node::Leaf { elements: ref mut leaf_vals, cur: _, max: m } => {
+            &mut Node::Leaf { values: ref mut leaf_vals, cur: _, max: m } => {
                  Self::new_intr(r, leaf_vals, m)
         }};
         mem::replace(self, new_self);
@@ -67,7 +82,7 @@ impl<T> Node<T> where T: HasPoint {
                     ////.fold(vals,
                          ////|mut vals, mut node| node.into_vals(vals))
             //}
-            //&mut Node::Leaf { elements: ref mut leaf_vals, cur: _, max: _ } => {
+            //&mut Node::Leaf { values: ref mut leaf_vals, cur: _, max: _ } => {
                 //vals.append(leaf_vals);
                 //panic!("sdf");
                 ////vals
@@ -100,13 +115,17 @@ impl<T> Node<T> where T: HasPoint {
 impl<T> PRQuadTree<T> where T: HasPoint {
 
     /// Where max_pts is max number of non-dupe pts.
-    #[allow(unused)]
     pub fn new(max_pts: usize) -> Self {
-        PRQuadTree { root: None, max: max_pts, region: Region::new(2048) }
+        PRQuadTree { root: None, max: max_pts, region: Region::default() }
     }
 
-    #[allow(unused)]
+    /// Returns the value wrapped in 'Some(val)' if point() was out of bounds.
     pub fn push(&mut self, val: T) -> Option<T> {
+        if let Some(ref mut node) = self.root {
+            node.push(self.region.clone(), val);
+        } else {
+            self.root = Some(Box::new(Node::new_leaf(vec![val], 1, self.max)));
+        }
         None
     }
 
